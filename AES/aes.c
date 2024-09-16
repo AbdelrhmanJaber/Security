@@ -55,9 +55,9 @@ uint8_t RC[] = {0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80, 0x1b, 0x36};
 
 /*Mapping the plain text with the sBOX*/
 
-void subBytes(uint8_t * tempCipherText){
+void subBytes(uint8_t * tempCipherText , uint8_t * cipherText){
     for(int i = 0 ; i < 16 ; i++){
-          *(tempCipherText + i) = sBOX[*(tempCipherText + i)] ;
+          *(tempCipherText + i) = sBOX[*(cipherText + i)] ;
     }
 }
 
@@ -134,7 +134,7 @@ void shiftRowDecryption(uint8_t * tempCipherText){
 
 uint8_t multiBy2(uint8_t elem){
     uint8_t returnValue;
-    if(elem & 0x80) returnValue = (elem<<1) ^ 0x1B;
+    if(elem & 0x80) returnValue = (elem<<1) ^ 0x1b;
     else returnValue = elem<<1;
     return returnValue;
 }
@@ -142,7 +142,7 @@ uint8_t multiBy2(uint8_t elem){
 
 void mixColumn(uint8_t * cipherText , uint8_t* tempCipherText){
     uint8_t temp ;
-    for(uint8_t i = 0 ; i < AES_BLOCK_SIZE ; i++){
+    for(uint8_t i = 0 ; i < AES_BLOCK_SIZE ; i+=4){
         temp = tempCipherText[i] ^ tempCipherText[i+1] ^ tempCipherText[i+2] ^ tempCipherText[i+3];
         cipherText[i] = multiBy2(tempCipherText[i] ^ tempCipherText[i+1]) ^ tempCipherText[i] ^ temp;
         cipherText[i+1] = multiBy2(tempCipherText[i+1] ^ tempCipherText[i+2]) ^ tempCipherText[i+1] ^ temp;
@@ -199,5 +199,36 @@ void keyscheduling(uint8_t * key , uint8_t roundKey [11][16]){
         roundKey[i][13] =  roundKey[i][9] ^ roundKey[i-1][13];
         roundKey[i][14] = roundKey[i][10] ^ roundKey[i-1][14];
         roundKey[i][15] = roundKey[i][11] ^ roundKey[i-1][15];
+    }
+}
+
+
+void aesEncryption(uint8_t roundKey[11][16] , uint8_t * plaintext , uint8_t * ciphertext){
+    uint8_t tempCiphertext[16];
+    /*round 0 XORING plaintext with the key*/
+    for(uint8_t i = 0 ; i < AES_BLOCK_SIZE ; i++){
+        *(ciphertext + i) = *(plaintext + i) ^ roundKey[0][i];
+    }
+
+    /*first 9 rounds*/
+    for(uint8_t i = 1 ; i < KEY_ROUND ; i++){
+     /*sub with SBOX*/
+       subBytes(tempCiphertext , ciphertext);
+       /*shift rows*/
+       shiftRowEncryption(tempCiphertext);
+       /*Mix Column*/
+       mixColumn(ciphertext , tempCiphertext);
+       /*add round key*/
+       for(uint8_t j = 0 ; j < AES_BLOCK_SIZE ; j++){
+            *(ciphertext + j) = *(ciphertext + j) ^ roundKey[i][j];
+       }
+    }
+    /*last round without mixColumn*/
+    subBytes(ciphertext , ciphertext);
+    /*shift rows*/
+    shiftRowEncryption(ciphertext);
+    /*add the last round key*/
+    for(uint8_t i = 0 ; i < AES_BLOCK_SIZE ; i++){
+        *(ciphertext + i) = *(ciphertext + i) ^ roundKey[10][i];
     }
 }
