@@ -2,12 +2,13 @@
 #include<math.h>
 
 
-typedef enum{
-    OK,
-    NOT_PRIME_NUMBER
-}RSA_STATUS_t;
+typedef struct {
+    uint32_t seed; // Seed for the PRNG
+}PRNG;
 
 
-uint8_t checkPrime(uint32_t n);
+#define INIT_SEEDS   12345
 
-RSA_STATUS_t generatePublicKey(uint32_t p , uint32_t q , uint32_t * e);
+void generate_key(uint32_t * e , uint32_t * n);
+
+void rsaEncryption(uint64_t * cipher , uint64_t * message , uint32_t e , uint32_t n);
