@@ -1,3 +1,10 @@
+/*
+    main.c : testing rsa - encryption and decryption
+    Created on: Sep 19, 2024
+    Author : Abdelrahman Ibrahim
+
+*/
+
 #include<stdio.h>
 #include"rsa.h"
 
