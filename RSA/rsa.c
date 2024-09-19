@@ -2,6 +2,7 @@
 #include<stdio.h>
 
 
+uint32_t global_phi_n = 0;
 
 
 // Function to initialize the PRNG with a seed
@@ -14,7 +15,7 @@ static uint32_t next_prng_p_q(PRNG *prng ) {
     // Parameters for the LCG
     uint32_t a = 1664525; // Multiplier
     uint32_t c = 12345; // Increment
-    uint32_t m = 2147483647; // Modulus (2^31 -1)
+    uint32_t m = 65535; // Modulus (2^16 -1)
 
     prng->seed = (a * prng->seed + c) % m; // Update seed
     return prng->seed; // Return the generated random number
@@ -115,6 +116,7 @@ void generate_key(uint32_t * e , uint32_t * n){
     generate_P_Q_for_key(&p , &q , &randonSeeds);
     *n = p * q;
     phi_n = (p-1) * (q-1);
+    global_phi_n = phi_n;
     while (!flag_e)
     {
         *e = next_prng_e(&randonSeeds , phi_n);
@@ -126,6 +128,58 @@ void generate_key(uint32_t * e , uint32_t * n){
 void rsaEncryption(uint64_t * cipher , uint64_t * message , uint32_t e , uint32_t n){
     for(uint8_t i = 0 ; i < 16 ; i++){
         cipher[i] = modExp(message[i] , (uint64_t)e , (uint64_t)n);
+    }
+}
+
+
+static uint32_t extendedGCD(uint32_t a, uint32_t b, uint32_t *x, uint32_t *y) {
+    uint32_t x0 = 1, y0 = 0; 
+    uint32_t x1 = 0, y1 = 1; 
+    uint32_t gcd;
+
+    while (b != 0) {
+        uint32_t quotient = a / b;
+
+        uint32_t temp = b;
+        b = a % b;
+        a = temp;
+
+        temp = x0;
+        x0 = x1;
+        x1 = temp - quotient * x1;
+
+        temp = y0;
+        y0 = y1;
+        y1 = temp - quotient * y1;
+    }
+
+    *x = x0;
+    *y = y0;
+    return a; 
+}
+
+static uint32_t modInverse(uint32_t a, uint32_t m) {
+    uint32_t x, y;
+    uint32_t gcd = extendedGCD(a, m, &x, &y);
+
+    if (gcd != 1) {
+        return 0; // Inverse doesn't exist
+    }
+
+    return (x % m + m) % m; // Ensure the result is positive
+}
+
+
+/*generte privte key d for decryption*/
+
+void generatePrivateKey(uint32_t e,uint32_t *d) {
+    *d = modInverse(e, global_phi_n);
+}
+
+/*decrypt the data*/
+void rsadecryption(uint64_t * cipher , uint64_t * message , uint32_t d , uint32_t n){
+    for(uint8_t i = 0 ; i < 16 ; i++){
+        message[i] = modExp(cipher[i] , (uint64_t)d , (uint64_t)n);
     }
 }
 
