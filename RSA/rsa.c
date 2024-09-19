@@ -163,10 +163,10 @@ static uint32_t modInverse(uint32_t a, uint32_t m) {
     uint32_t gcd = extendedGCD(a, m, &x, &y);
 
     if (gcd != 1) {
-        return 0; // Inverse doesn't exist
+        return 0; 
     }
 
-    return (x % m + m) % m; // Ensure the result is positive
+    return (x % m + m) % m; 
 }
 
 
