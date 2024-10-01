@@ -17,9 +17,9 @@ typedef uint8_t       BYTE;
 typedef uint32_t      WORD;            
 
 typedef struct {
-	BYTE data[64]; 
+    BYTE data[64];
 	WORD datalen;
-	uint64_t bitlen;
+	unsigned long long bitlen;
 	WORD state[8];
 } sha256_block;
 
@@ -27,10 +27,10 @@ typedef struct {
 void sha256_init(sha256_block *sha_block);
 
 
-void sha256_update(sha256_block *sha_block, const BYTE data[], uint32_t len);
+void sha256_update(sha256_block *sha_block, BYTE data[], uint32_t len);
 
 
-void sha256_final(sha256_block *sha_block, BYTE hash[]);
+void sha256_final(sha256_block *sha_block, BYTE hash[]) ;
 
 
 #endif
