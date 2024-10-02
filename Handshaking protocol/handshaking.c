@@ -9,7 +9,7 @@
    * 5- finish message from server and client
 */
 
-
+uint32_t global_n , global_e;
 
 void clientHello(uint8_t * clientMessage){
     /*this printf function will be replaced by the communication 
@@ -31,7 +31,6 @@ void servevrHello(uint8_t * serverMessage , signature_message_server_t  * messag
     sha256_init(&sha_block);
     sha256_update(&sha_block, (BYTE *)message->server_hello_message, 16);
     sha256_final(&sha_block, hashed_sever_message);
-
     for(uint8_t i = 0 ; i < 32 ; i++){
         tempHash[i] = hashed_sever_message[i];
     }
@@ -40,6 +39,8 @@ void servevrHello(uint8_t * serverMessage , signature_message_server_t  * messag
     uint32_t  e , n  , d;
     generate_key(&e , &n);
     generatePrivateKey(e , &d);
+    global_e = e; //public key of server
+    global_n = n;
     rsaEncryption(message->encrypted_hashed_message ,  tempHash , d , n); //encrypt with the private key
 }
 
@@ -49,5 +50,19 @@ uint8_t clientCheckDigitalSignature(signature_message_server_t * server_message 
     * compare the hashed value that decrypt with calculated one
     *  if the same value return 1 if not return 0
     */
-   
+    uint8_t hashed_sever_message[32] , tempHashed[32];
+    uint8_t flag = 1;
+    rsadecryption(server_message->encrypted_hashed_message , client_message->decrypted_hashed_message , global_e , global_n);
+    for(uint8_t i = 0 ; i < 32 ; i++){
+        tempHashed[i] = client_message->decrypted_hashed_message[i];
+    }
+    sha256_block sha_block;
+    sha256_init(&sha_block);
+    sha256_update(&sha_block , (BYTE *)server_message->server_hello_message , 16);
+    sha256_final(&sha_block , hashed_sever_message);
+    /*compare between decrypted hash and calculated hash*/
+    for(uint8_t i = 0 ; i <32 ; i++){
+        if(hashed_sever_message[i] != tempHashed[i]) flag = 0;
+    }
+    return 1;
 }

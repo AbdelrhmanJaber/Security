@@ -20,7 +20,7 @@ typedef struct
 
 typedef struct 
 {
-   uint64_t encrypted_hashed_message[32];
+   uint64_t decrypted_hashed_message[32];
    uint8_t server_hello_message[16];
 }signature_message_client_t;
 
