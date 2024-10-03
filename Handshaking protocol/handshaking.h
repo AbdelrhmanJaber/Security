@@ -1,6 +1,17 @@
+/*
+    handshaking.h 
+    Created on: oct 3, 2024
+    Author : Abdelrahman Ibrahim
+
+*/
+
+#ifndef HANDSHAKING_H
+#define HANDSHAKING_H
+
 #include"Platform_Types.h"
 #include"rsa.h"
 #include"sha256.h"
+#include"hmac.h"
 #include<stdio.h>
 
 
@@ -11,10 +22,21 @@
 */
 
 
+#define SERVER_RANDOM_NUMBERS     2
+#define CLIENT_RANDOM_NUMBERS     2
+
+
+typedef struct{
+   uint8_t client_random[16];
+   uint8_t sessionID;
+}client_hello_t;
+
+
 typedef struct 
 {
    uint64_t encrypted_hashed_message[32];
    uint8_t server_hello_message[16];
+   uint8_t server_random[16];
 }signature_message_server_t;
 
 
@@ -26,8 +48,14 @@ typedef struct
 
 
 
-void clientHello(uint8_t * clientMessage);
+void clientHello(client_hello_t * client_hello_mes);
 
-void servevrHello(uint8_t * serverMessage , signature_message_server_t  * message);
+void servevrHello(uint8_t * serverMessage , signature_message_server_t  * server_hello_mes);
 
 uint8_t clientCheckDigitalSignature(signature_message_server_t * server_message ,signature_message_client_t * client_message);
+
+void generatePreMasterKey(uint8_t pre_master_key[48]);
+
+void generateMasterKey(uint8_t pre_master_key[48] , uint8_t random_key[16] , uint8_t master_key[HMAC_BLOCK_SIZE]);
+
+#endif

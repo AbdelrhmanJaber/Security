@@ -5,34 +5,6 @@
 uint32_t global_phi_n = 0;
 
 
-// Function to initialize the PRNG with a seed
-static void init_prng(PRNG *prng, uint32_t seed) {
-    prng->seed = seed;
-}
-
-// Function to generate the next random number
-static uint32_t next_prng_p_q(PRNG *prng ) {
-    // Parameters for the LCG
-    uint32_t a = 1664525; // Multiplier
-    uint32_t c = 12345; // Increment
-    uint32_t m = 65535; // Modulus (2^16 -1)
-
-    prng->seed = (a * prng->seed + c) % m; // Update seed
-    return prng->seed; // Return the generated random number
-}
-
-// Function to generate the next random number for public key in rsa
-static uint32_t next_prng_e(PRNG *prng , uint32_t phi_n) {
-    // Parameters for the LCG
-    uint32_t a = 1664525; // Multiplier
-    uint32_t c = 12345; // Increment
-    uint32_t m = phi_n; // Modulus (phi_n)
-
-    prng->seed = (a * prng->seed + c) % m; // Update seed
-    return prng->seed; // Return the generated random number
-}
-
-
 //Function to check if the number prime or not
 
 static uint8_t checkPrime(uint32_t n){
@@ -55,11 +27,11 @@ static uint8_t checkPrime(uint32_t n){
 static void generate_P_Q_for_key(uint32_t * p , uint32_t * q , PRNG * randomSeeds){
     uint8_t flag_p = 0 , flag_q = 0;
     while(!flag_p){
-        *p = next_prng_p_q(randomSeeds); //
+        *p = next_prng(randomSeeds , MODULO_16); //
         flag_p = checkPrime(*p);
     }
     while(!flag_q){
-        *q = next_prng_p_q(randomSeeds);
+        *q = next_prng(randomSeeds , MODULO_16);
         flag_q = checkPrime(*q);
     }
 }
