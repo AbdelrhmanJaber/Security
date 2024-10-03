@@ -19,6 +19,8 @@
 uint32_t global_n , global_e , global_d;
 
 
+
+
 void clientHello(client_hello_t * client_hello_mes){
     /*this printf function will be replaced by the communication 
     protocol interface using in TLS*/
@@ -27,9 +29,6 @@ void clientHello(client_hello_t * client_hello_mes){
     /*generate rondom numbers to be exchanged between server and client*/
     for(uint8_t i = 0 ; i < 16 ; i++){
         client_hello_mes->client_random[i] = (uint8_t)next_prng(&randonSeeds , MODULO_32); 
-    }
-    for(uint8_t i = 0 ; i < 16 ; i++){
-        printf("%x ",client_hello_mes->client_random[i]);
     }
     printf("\nsession ID = %d\n",client_hello_mes->sessionID);
 }
@@ -45,9 +44,6 @@ void servevrHello(uint8_t * serverMessage ,signature_message_server_t  * server_
     /*generate rondom numbers to be exchanged between server and client*/
     for(uint8_t i = 0 ; i < 16 ; i++){
         server_hello_mes->server_random[i] = (uint8_t)next_prng(&randonSeeds , MODULO_32); 
-    }
-    for(uint8_t i = 0 ; i < 16 ; i++){
-        printf("%x ",server_hello_mes->server_random[i]);
     }
     /*calculate the hash of the message*/
     sha256_block sha_block;
@@ -127,4 +123,41 @@ void generateMasterKey(uint8_t pre_master_key[48] , uint8_t random_key[16] , uin
     for(uint8_t i = 0 ; i < 32 ; i++){
         printf("%x ",master_key[i]);
     }
+}
+
+
+void generateSessionKeys(uint8_t master_key[HMAC_BLOCK_SIZE] , uint8_t random_seed[16] ,
+ uint8_t session_keys[SESION_KEYS_NUMBERS][SESSION_KEY_SIZE]){
+    uint8_t second_level_seed[32];
+    uint8_t mac_secret_keys[32];
+    uint8_t aes_secret_keys[32];
+    hmac(second_level_seed , random_seed , 16 , master_key , HMAC_BLOCK_SIZE);
+    /*generate MAC SESSION keys*/
+    hmac(mac_secret_keys , second_level_seed , HMAC_BLOCK_SIZE , master_key , HMAC_BLOCK_SIZE);
+    /*generte AES SESSION KEYS*/
+    /*first level*/
+    hmac(second_level_seed , second_level_seed , HMAC_BLOCK_SIZE , master_key , HMAC_BLOCK_SIZE);
+    /*second level*/
+    hmac(aes_secret_keys , second_level_seed , HMAC_BLOCK_SIZE , master_key , HMAC_BLOCK_SIZE);
+    /*filling the gobal 2d array of session keys*/
+
+    /*fill mac keys arrays*/
+    /*client mac session key*/
+    for(uint8_t i = 0 ; i < SESSION_KEY_SIZE ; i++){
+        session_keys[CLIENT_MAC_SESSION_KEY][i] = mac_secret_keys[i];
+    }
+    /*server mac session key*/
+    for(uint8_t i = 0 ; i < SESSION_KEY_SIZE ; i++){
+        session_keys[SERVER_MAC_SESSION_KEY][i] = mac_secret_keys[i+16];
+    }
+
+    /*fill aes keys arrays*/
+    /*client mac session key*/
+    for(uint8_t i = 0 ; i < SESSION_KEY_SIZE ; i++){
+        session_keys[CLIENT_AES_SESSION_KEY][i] = aes_secret_keys[i];
+    }
+    /*server mac session key*/
+    for(uint8_t i = 0 ; i < SESSION_KEY_SIZE ; i++){
+        session_keys[SERVER_AES_SESSION_KEY][i] = aes_secret_keys[i+16];
+    }    
 }

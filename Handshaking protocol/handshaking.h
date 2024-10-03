@@ -26,6 +26,15 @@
 #define CLIENT_RANDOM_NUMBERS     2
 
 
+#define SESION_KEYS_NUMBERS       4
+#define SESSION_KEY_SIZE          16 //BYTES
+
+
+#define CLIENT_MAC_SESSION_KEY    0
+#define SERVER_MAC_SESSION_KEY    1
+#define CLIENT_AES_SESSION_KEY    2
+#define SERVER_AES_SESSION_KEY    3
+
 typedef struct{
    uint8_t client_random[16];
    uint8_t sessionID;
@@ -57,5 +66,9 @@ uint8_t clientCheckDigitalSignature(signature_message_server_t * server_message 
 void generatePreMasterKey(uint8_t pre_master_key[48]);
 
 void generateMasterKey(uint8_t pre_master_key[48] , uint8_t random_key[16] , uint8_t master_key[HMAC_BLOCK_SIZE]);
+
+
+void generateSessionKeys(uint8_t master_key[HMAC_BLOCK_SIZE] , uint8_t random_seed[16] ,
+ uint8_t session_keys[SESION_KEYS_NUMBERS][SESSION_KEY_SIZE]);
 
 #endif
