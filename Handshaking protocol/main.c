@@ -22,6 +22,7 @@ void main(void){
     generateMasterKey(pre_master_key , client_hello.client_random , master_key);
     generateSessionKeys(master_key , message.server_random , session_keys);
     /*test print session keys*/
+    /*EVERY SESSION HAS ITS OWN SESSION KEYS*/
     printf("\n\ntest print client mac session key :\n");
     for(uint8_t i = 0 ; i < 16 ; i++){
         printf("%c",session_keys[CLIENT_MAC_SESSION_KEY][i]);
