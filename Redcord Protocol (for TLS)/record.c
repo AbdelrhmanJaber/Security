@@ -2,7 +2,7 @@
  * record.c : for data exchange through tls
  *
  *  Created on: Oct 5, 2024
- *      Author: Abdelrahman Ibrahim
+ *  Author: Abdelrahman Ibrahim
  */
 
 
